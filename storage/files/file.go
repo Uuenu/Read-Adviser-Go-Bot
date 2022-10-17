@@ -1,10 +1,10 @@
 package files
 
 import (
-	"crypto/rand"
 	"encoding/gob"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	lib "telegram-bot-go/lib/e"
