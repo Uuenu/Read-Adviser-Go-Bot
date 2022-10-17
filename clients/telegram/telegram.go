@@ -68,7 +68,7 @@ func (c *Client) SendMessage(chatID int, text string) error {
 
 }
 
-func (c *Client) doRequest(method string, query url.Values) ([]byte, error) {
+func (c *Client) doRequest(method string, query url.Values) ([]byte, err error) {
 	defer func() { err = lib.WrapIfErr("can't do request", err) }()
 
 	u := url.URL{
