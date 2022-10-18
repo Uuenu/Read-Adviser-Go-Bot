@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"strings"
@@ -74,9 +75,11 @@ func (p *Processor) sendRandom(chatID int, username string) (err error) {
 	defer func() { err = lib.WrapIfErr("cant sen random page", err) }()
 
 	page, err := p.storage.PickRandom(username)
-	if err != nil && !errors.Is(err, storage.ErrNoSavedPage) {
+	fmt.Print(err)
+	if err != nil && !errors.Is(err, storage.ErrNoSavedPage) { // !!!
 		return err
 	}
+
 	if errors.Is(err, storage.ErrNoSavedPage) {
 		return p.tg.SendMessage(chatID, msgNoSavedPage)
 	}

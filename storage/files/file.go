@@ -57,11 +57,12 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 
 	fPath := filepath.Join(s.basePath, userName)
 
+	// 1. check user folder
+	// 2. create folder
 	files, err := os.ReadDir(fPath)
 	if err != nil {
 		return nil, err
 	}
-
 	if len(files) == 0 {
 		return nil, storage.ErrNoSavedPage
 	}
@@ -70,6 +71,8 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 	n := rand.Intn(len(files))
 
 	file := files[n]
+
+	fmt.Println(file)
 
 	return s.decodePage(filepath.Join(fPath, file.Name()))
 }
@@ -111,15 +114,15 @@ func (s Storage) Remove(p *storage.Page) error {
 
 func (s Storage) decodePage(filePath string) (*storage.Page, error) {
 	f, err := os.Open(filePath)
+	//f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, defaultPerm)
 	if err != nil {
-		return nil, lib.Wrap("can't decode page", err)
+		return nil, lib.Wrap("can't decode page listc", err)
 	}
 	defer func() { _ = f.Close() }()
-
 	var p storage.Page
 
-	if err := gob.NewEncoder(f).Encode(&p); err != nil {
-		return nil, err
+	if err := gob.NewDecoder(f).Decode(&p); err != nil {
+		return nil, lib.Wrap("can't decode page gob.err", err)
 	}
 
 	return &p, nil
