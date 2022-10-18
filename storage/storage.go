@@ -2,6 +2,7 @@ package storage
 
 import (
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"io"
 	lib "telegram-bot-go/lib/e"
@@ -19,6 +20,8 @@ type Page struct {
 	UserName string
 	//Created  time.Time
 }
+
+var ErrNoSavedPage = errors.New("no saved page")
 
 func (p Page) Hash() (string, error) {
 	h := sha1.New()
