@@ -7,7 +7,9 @@ import (
 	tgClient "telegram-bot-go/clients/telegram"
 	eventconsumer "telegram-bot-go/consumer/event-consumer"
 	"telegram-bot-go/events/telegram"
-	"telegram-bot-go/storage/files"
+
+	//"telegram-bot-go/storage/files"
+	"telegram-bot-go/storage/mongodb"
 )
 
 const (
@@ -20,7 +22,8 @@ func main() {
 
 	eventsProccessor := telegram.New(
 		tgClient.New(tgBotHost, mustToken()),
-		files.New(storagePath),
+		//files.New(storagePath),
+		mongodb.New(),
 	)
 
 	log.Print("service started")

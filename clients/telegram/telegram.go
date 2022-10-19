@@ -13,7 +13,7 @@ import (
 
 type Client struct {
 	host     string
-	basePath string
+	basePath string // tg-bot.com/bot<token>
 	Client   http.Client
 }
 
