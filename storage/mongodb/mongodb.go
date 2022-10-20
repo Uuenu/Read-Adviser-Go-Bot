@@ -45,12 +45,7 @@ func New() *Storage {
 
 func (s Storage) Save(page *storage.Page) (err error) {
 	defer func() { err = lib.WrapIfErr("can't save page", err) }()
-
 	userCollection := s.DB.Collection(page.UserName)
-	//fmt.Println("user collection", userCollection)
-	if userCollection == nil {
-		s.DB.CreateCollection(nil, page.UserName, nil)
-	}
 	doc := bson.D{{"page_url", page.URL}}
 	result, err := userCollection.InsertOne(context.TODO(), doc)
 	fmt.Println("result save: ", result)
@@ -64,9 +59,7 @@ func (s Storage) IsExist(p *storage.Page) (bool, error) {
 	if err != nil {
 		return false, nil
 	}
-	//fmt.Println("result: ", result)
 	link := fmt.Sprintf("%v", result["page_url"])
-	//fmt.Println("link and p.URL: ", link, p.URL)
 	if link == p.URL {
 		return true, nil
 	}
@@ -79,7 +72,6 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 	if err != nil {
 		return &storage.Page{}, lib.WrapIfErr("can't connect to db", err)
 	}
-	//fmt.Println("urlDocuments: ", urlDocuments)
 	if urlDocuments == nil {
 		return &storage.Page{}, storage.ErrNoSavedPage
 	}
@@ -95,7 +87,6 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 
 			// If there are no cursor.Decode errors
 		} else {
-			//fmt.Println("page_url: ", result["page_url"])
 			links = append(links, fmt.Sprintf("%v", result["page_url"]))
 		}
 	}
