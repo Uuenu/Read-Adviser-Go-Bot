@@ -18,6 +18,7 @@ type Storage interface {
 type Page struct {
 	URL      string
 	UserName string
+	ChatID   int
 	//Created  time.Time
 }
 

@@ -1,10 +1,13 @@
 package telegram
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/url"
+	"strconv"
 	"strings"
 	lib "telegram-bot-go/lib/e"
 	"telegram-bot-go/storage"
@@ -20,6 +23,12 @@ func (p *Processor) doCmd(text string, chatID int, username string) error {
 	text = strings.TrimSpace(text)
 
 	log.Printf("got new command '%s' from '%s' ", text, username)
+
+	// add merge collections if user add or delete username
+	username, err := checkUsername(chatID, username)
+	if err != nil {
+		return lib.WrapIfErr("can't check username", err)
+	}
 
 	if IsAddCmd(text) {
 		return p.savePage(chatID, text, username)
@@ -42,6 +51,11 @@ func (p *Processor) doCmd(text string, chatID int, username string) error {
 	//star: /start: hi + help
 
 	return nil
+}
+
+func (p *Processor) namelessUser(chatID int, username string) (err error) {
+	defer func() { err = lib.WrapIfErr("can't check username", err) }()
+	return p.tg.SendMessage(chatID, msgNamelessUser)
 }
 
 func (p *Processor) savePage(chatID int, pageUrl string, username string) (err error) {
@@ -108,4 +122,20 @@ func IsAddCmd(text string) bool {
 func IsUrl(text string) bool {
 	u, err := url.Parse(text)
 	return err == nil && u.Host != ""
+}
+
+func checkUsername(chatID int, username string) (string, error) {
+	// Username(chatID)
+	if username == "" {
+		return Username(chatID)
+	}
+	return username, nil
+}
+
+func Username(chatID int) (string, error) {
+	h := sha256.New()
+	if _, err := io.WriteString(h, strconv.Itoa(chatID)); err != nil {
+		return "", lib.Wrap("can't calculate hash", err)
+	}
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }

@@ -13,4 +13,5 @@ const (
 	msgNoSavedPage   = "You have no saved pages 🌑"
 	msgSaved         = "Saved! 👌"
 	msgAlreadyExists = "You have already have this page in your list 🤗"
+	msgNamelessUser  = "Create username before using bot 🧐"
 )

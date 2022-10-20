@@ -22,8 +22,9 @@ func main() {
 
 	eventsProccessor := telegram.New(
 		tgClient.New(tgBotHost, mustToken()),
-		//files.New(storagePath),
-		mongodb.New(),
+		//files.New(storagePath), // file
+		mongodb.New(), // monogdb
+
 	)
 
 	log.Print("service started")
