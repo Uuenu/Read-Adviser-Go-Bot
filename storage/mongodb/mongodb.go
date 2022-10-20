@@ -47,7 +47,7 @@ func (s Storage) Save(page *storage.Page) (err error) {
 	defer func() { err = lib.WrapIfErr("can't save page", err) }()
 
 	userCollection := s.DB.Collection(page.UserName)
-	fmt.Println("user collection", userCollection)
+	//fmt.Println("user collection", userCollection)
 	if userCollection == nil {
 		s.DB.CreateCollection(nil, page.UserName, nil)
 	}
@@ -62,11 +62,11 @@ func (s Storage) IsExist(p *storage.Page) (bool, error) {
 	var result bson.M
 	err := s.DB.Collection(p.UserName).FindOne(context.TODO(), bson.M{"page_url": p.URL}).Decode(&result)
 	if err != nil {
-		return false, lib.Wrap("can't get data from db", err)
+		return false, nil
 	}
-	fmt.Println("result: ", result)
+	//fmt.Println("result: ", result)
 	link := fmt.Sprintf("%v", result["page_url"])
-	fmt.Println("link and p.URL: ", link, p.URL)
+	//fmt.Println("link and p.URL: ", link, p.URL)
 	if link == p.URL {
 		return true, nil
 	}
@@ -77,7 +77,11 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 
 	urlDocuments, err := s.DB.Collection(userName).Find(context.TODO(), bson.D{})
 	if err != nil {
-		return nil, lib.WrapIfErr("can't connect to db", err)
+		return &storage.Page{}, lib.WrapIfErr("can't connect to db", err)
+	}
+	//fmt.Println("urlDocuments: ", urlDocuments)
+	if urlDocuments == nil {
+		return &storage.Page{}, storage.ErrNoSavedPage
 	}
 
 	links := make([]string, 0)
@@ -87,12 +91,17 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 		err := urlDocuments.Decode(&result)
 		// If there is a cursor.Decode error
 		if err != nil {
-			return nil, lib.WrapIfErr("cursor.Next() error:", err)
+			return &storage.Page{}, lib.WrapIfErr("cursor.Next() error:", err)
 
 			// If there are no cursor.Decode errors
 		} else {
+			//fmt.Println("page_url: ", result["page_url"])
 			links = append(links, fmt.Sprintf("%v", result["page_url"]))
 		}
+	}
+
+	if len(links) == 0 {
+		return nil, storage.ErrNoSavedPage
 	}
 
 	rand.Seed(time.Now().UnixNano())
@@ -100,17 +109,19 @@ func (s Storage) PickRandom(userName string) (page *storage.Page, err error) {
 
 	link := links[n]
 
-	var p storage.Page
-	p.URL = link
+	p := storage.Page{
+		URL:      link,
+		UserName: userName,
+	}
 
 	return &p, nil
+
 }
 
 func (s Storage) Remove(p *storage.Page) error {
-	// _, err := s.DB.Collection(p.UserName).DeleteOne(s.Ctx, bson.M{"page": p.URL})
-	// if err != nil {
-	// 	fmt.Println("hello")
-	// 	return lib.WrapIfErr("can'n remove page from collection", err)
-	// }
+	_, err := s.DB.Collection(p.UserName).DeleteOne(context.TODO(), bson.M{"page_url": p.URL})
+	if err != nil {
+		return lib.WrapIfErr("can'n remove page from collection", err)
+	}
 	return nil
 }
